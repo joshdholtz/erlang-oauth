@@ -149,7 +149,7 @@ rsa_sha1_signature(HttpMethod, URL, Params, Consumer) ->
   rsa_sha1_signature(BaseString, Consumer).
 
 rsa_sha1_signature(BaseString, Consumer) ->
-  Key = read_private_key(consumer_secret(Consumer)),
+  Key = read_private_key_contents(consumer_secret(Consumer)),
   base64:encode_to_string(public_key:sign(list_to_binary(BaseString), sha, Key)).
 
 rsa_sha1_verify(Signature, HttpMethod, URL, Params, Consumer) ->
@@ -211,6 +211,10 @@ read_cert_key(#'OTPSubjectPublicKeyInfo'{subjectPublicKey=Key}) ->
 
 read_private_key(Path) ->
   {ok, Contents} = file:read_file(Path),
+  [Info] = public_key:pem_decode(Contents),
+  public_key:pem_entry_decode(Info).
+
+read_private_key_contents(Contents) ->
   [Info] = public_key:pem_decode(Contents),
   public_key:pem_entry_decode(Info).
 
